@@ -77,7 +77,10 @@ public class ExpenseTracker {
             System.out.println("3. Search Expense");
             System.out.println("4. Delete Expense");
             System.out.println("5. Total Spending");
-            System.out.println("6. Exit");
+            System.out.println("6.Update Expense");
+            System.out.println("7. Search by Category");
+            System.out.println("8.Category Wise Spending");
+            System.out.println("9.Exit");
 
             int choice = sc.nextInt();
             sc.nextLine();
@@ -203,6 +206,91 @@ public class ExpenseTracker {
                     }
                     break;
                 case 6:
+                    System.out.println("Enter ID:");
+                    int updateID = sc.nextInt();
+                    sc.nextLine();
+
+                    System.out.println("Enter New Title:");
+                    String newTitle = sc.nextLine();
+
+                    System.out.println("Enter New Amount:");
+                    double newAmount = sc.nextDouble();
+                    sc.nextLine();
+
+                    System.out.println("Enter New Category:");
+                    String newCategory = sc.nextLine();
+
+                    System.out.println("Enter New Date:");
+                    String newDate = sc.nextLine();
+
+                    try {
+                        Connection con = DBconnection.getConnection();
+                        String sql = "UPDATE expenses SET title = ?,amount=?, category=?, expense_date = ? WHERE id =?";
+                        PreparedStatement ps = con.prepareStatement(sql);
+                        ps.setString(1, newTitle);
+                        ps.setDouble(2, newAmount);
+                        ps.setString(3, newCategory);
+                        ps.setString(4, newDate);
+                        ps.setInt(5, updateID);
+
+                        int rows = ps.executeUpdate();
+                        if (rows > 0) {
+                            System.out.println("Expense Updated Successfully!");
+
+                        } else {
+                            System.out.println("Expense Not Found!");
+                        }
+                        con.close();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    break;
+                case 7:
+                    System.out.println("Enter Category:");
+                    String searchCategory = sc.nextLine();
+                    try {
+                        Connection con = DBconnection.getConnection();
+                        String sql = "SELECT * FROM expenses WHERE category = ?";
+                        PreparedStatement ps = con.prepareStatement(sql);
+                        ps.setString(1, searchCategory);
+                        ResultSet rs = ps.executeQuery();
+                        boolean found = false;
+                        while (rs.next()) {
+                            found = true;
+                            System.out.println(
+                                    "\nID: " + rs.getInt("id") +
+                                            "\nTitle: " + rs.getString("title") +
+                                            "\nAmount: " + rs.getDouble("amount") +
+                                            "\nCategory: " + rs.getString("category") +
+                                            "\nDate: " + rs.getDate("expense_date"));
+                        }
+                        if (!found) {
+                            System.out.println("No Expense Found!");
+                        }
+                        con.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case 8:
+                    try{
+                        Connection con = DBconnection.getConnection();
+                        String sql = "SELECT category, SUM(amount) AS total FROM expenses GROUP BY category";
+                        PreparedStatement ps = con.prepareStatement(sql);
+                        ResultSet rs = ps.executeQuery();
+                        while(rs.next()) {
+                            System.out.println("Categoryes " + rs.getString("category") + 
+                        "\nTotal: " + rs.getDouble("total"));
+                        }
+                        con.close();
+                    }
+                    catch(Exception e){
+                   e.printStackTrace();
+                    }
+                    break;    
+                case 9:
                     System.out.println("------Exiting--------");
                     sc.close();
                     return;
